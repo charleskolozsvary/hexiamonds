@@ -4,9 +4,12 @@
 \pgfplotsset{compat=1.18}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{txfonts}
 
 % eisenstein integers are of the form a+b\omega where \omega = \frac{-1 + i\sqrt{3}}{2}
 % -1/2 + \sqrt{3}/2 i
+
+\newcommand{\set}[1]{\{#1\}}
 
 \pgfmathparse{sqrt(3)/2}
 \edef\sqthreeotwo{\pgfmathresult}
@@ -23,11 +26,8 @@
   \xdef\currY{\bwIm}%
 }
 
-%(0 -1) x    
-%(1  0) y
-
-% x -> -y
-% y -> x
+%(0 -1) x   %% x -> -y
+%(1  0) y   %% y -> x
 \def\rotateNinety#1#2{ 
   \edef\x{#1}
   \edef\y{#2}
@@ -41,7 +41,7 @@
 
 \def\writeb#1{\pgfmathparse{#1 >= 0}\ifx\pgfmathresult\one+#1\else#1\fi}
 
-% an eisenstein integer a+b\omega is a manhattan distance d(a+b\omega) from 0
+% an eisenstein integer a+b\omega is manhattan distance d(a+b\omega) from 0
 % d(a+b\omega) = abs(a) + abs(b) if a == 0 or b ==0 or (a < 0 and b > 0) or (a > 0 and b < 0)
 % d(a+b\omega) = max(abs(a), abs(b)) if (a > 0 and b > 0) or (a < 0 and b < 0)
 
@@ -62,10 +62,14 @@
   \xdef\withinGrid{\pgfmathresult}
 }
 
-
 \begin{document}
+The Eisenstein integers are of the form $a + b\omega$, where $\omega = \frac{-1 + i\sqrt{3}}{2}$. They form a triangular lattice and the ring $\varmathbb{Z}[\omega]$.
+
+A triangle can be represented as the set of three Eisenstein integers which surround its center. E.g., $\set{0, 1, 1+\omega}$ coresponds to the triangle highlighted orange below.
 \[
 \begin{tikzpicture}
+      \eisToCar{1}{1}
+  \filldraw[orange!25] (0,0)--(1,0)--(\currX,\currY)--cycle;
     \foreach \a in {-5, ..., 5}{
     \foreach \b in {-5, ..., 5}{
       \testInGrid{\a}{\b}{5}
@@ -73,7 +77,6 @@
       \eisToCar{\a}{\b}
       \rotateNinety{\currX}{\currY}
       \filldraw[color=blue!50] (\rotX/\sqthree,\rotY/\sqthree) circle (.1);      
-      %% \draw node at (\currX,\currY) {\tiny \a \writeb\b$\omega$};
       \else\fi
       }
     }
@@ -83,8 +86,8 @@
       \testInGrid{\a}{\b}{5}
       \ifx\withinGrid\one
       \eisToCar{\a}{\b}
-      \filldraw (\currX,\currY) circle (.1);      
-      %% \draw node at (\currX,\currY) {\tiny \a \writeb\b$\omega$};
+      \draw (\currX,\currY) circle (.4625);
+      \draw node at (\currX,\currY) {\tiny $\scriptscriptstyle\text{\a\writeb\b}\omega$};      
       \else\fi
       }
   }
