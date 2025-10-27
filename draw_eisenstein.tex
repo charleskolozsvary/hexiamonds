@@ -4,12 +4,16 @@
 \pgfplotsset{compat=1.18}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{txfonts}
+\usepackage{dsfont}
+%\usepackage{txfonts}
 
 % eisenstein integers are of the form a+b\omega where \omega = \frac{-1 + i\sqrt{3}}{2}
 % -1/2 + \sqrt{3}/2 i
 
 \newcommand{\set}[1]{\{#1\}}
+
+\DeclareMathOperator{\rmd}{d}
+\DeclareMathOperator{\abs}{abs}
 
 \pgfmathparse{sqrt(3)/2}
 \edef\sqthreeotwo{\pgfmathresult}
@@ -42,8 +46,8 @@
 \def\writeb#1{\pgfmathparse{#1 >= 0}\ifx\pgfmathresult\one+#1\else#1\fi}
 
 % an eisenstein integer a+b\omega is manhattan distance d(a+b\omega) from 0
-% d(a+b\omega) = abs(a) + abs(b) if a == 0 or b ==0 or (a < 0 and b > 0) or (a > 0 and b < 0)
-% d(a+b\omega) = max(abs(a), abs(b)) if (a > 0 and b > 0) or (a < 0 and b < 0)
+% d(a+b\omega) = abs(a) + abs(b) if ab <= 0
+% d(a+b\omega) = max(abs(a), abs(b)) if ab > 0
 
 \xdef\maxSteps{5}
 
@@ -51,7 +55,7 @@
 \xdef\sqthree{\pgfmathresult}
 
 \gdef\testInGrid#1#2#3{
-  \pgfmathparse{#1 == 0 || #2 == 0 || (#1 < 0 && #2 > 0) || (#1 > 0 && #2 < 0)}
+  \pgfmathparse{#1*#2 <= 0}
   \edef\oppSign{\pgfmathresult}
   \ifx\oppSign\one
   \pgfmathparse{abs(#1) + abs(#2)}
@@ -63,7 +67,7 @@
 }
 
 \begin{document}
-The Eisenstein integers are of the form $a + b\omega$, where $\omega = \frac{-1 + i\sqrt{3}}{2}$. They form a triangular lattice and the ring $\varmathbb{Z}[\omega]$.
+The Eisenstein integers are of the form $a + b\omega$, where $\omega = \frac{-1 + i\sqrt{3}}{2}$. They form a triangular lattice and the ring $\mathds{Z}[\omega]$.
 
 A triangle can be represented as the set of three Eisenstein integers which surround its center. E.g., $\set{0, 1, 1+\omega}$ coresponds to the triangle highlighted orange below.
 \[
@@ -76,7 +80,7 @@ A triangle can be represented as the set of three Eisenstein integers which surr
       \ifx\withinGrid\one
       \eisToCar{\a}{\b}
       \rotateNinety{\currX}{\currY}
-      \filldraw[color=blue!50] (\rotX/\sqthree,\rotY/\sqthree) circle (.1);      
+      %% \filldraw[color=blue!50] (\rotX/\sqthree,\rotY/\sqthree) circle (.1);      
       \else\fi
       }
     }
@@ -93,4 +97,18 @@ A triangle can be represented as the set of three Eisenstein integers which surr
   }
 \end{tikzpicture}
 \]
+The manhattan distance of an Eisenstein integer from the origin is\footnote{It doesn't matter which one is the ``or equal to'' comparison. If one of $a$ or $b$ is zero $|a| + |b| = \max(|a|, |b|)$.}
+\[
+\rmd(a + b\omega) =
+\begin{cases}
+  |a| + |b| &\text{if } ab \le 0\\
+  \max(|a|, |b|) &\text{if } ab > 0
+  \end{cases}.
+\]
+When a and b are of opposite signs, $a$ and $b$ individually contribute to the number of steps moved. But when $a$ and $b$ are the same sign, each multiple of $1+1\omega$ corresponds to \textit{just one step}, not two. After removing all the multiples of $1+1\omega$, one of $a$ or $b$ will be zero, and the abolute value of the nonzero component contributes the remaining steps. Putting this thought process into algebra reveals that the manhattan distance when $a$ and $b$ are the same sign is
+\begin{align*}
+  \rmd(a + b\omega) ={}& \min(|a|, |b|) && \text{(multiples of $1+1\omega$)}\\
+  & + \max(|a|, |b|) - \min(|a|, |b|) && \text{(remaining steps after factoring out all $1+1\omega$)}\\
+  ={}& \max(|a|, |b|)
+\end{align*}
 \end{document}
