@@ -1,5 +1,6 @@
 # coordinate (a, b) corresponds to Eisenstein integer a + b\omega
 
+# hexiamond names from https://mathworld.wolfram.com/Hexiamond.html
 HEXIAMONDS = {'bar'      : [(0,0), (1,0), (2,0), (3,0), (4,1), (3,1), (2,1), (1,1)],
               'crook'    : [(0,0), (1,0), (2,0), (3,1), (2,1), (1,1), (1,2), (0,1)], 
               'crown'    : [(0,0), (1,0), (2,0), (3,1), (2,1), (2,2), (1,1), (0,1)],
