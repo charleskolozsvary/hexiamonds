@@ -1,5 +1,5 @@
 # Hexiamonds
-Hexiamonds are polyiamonds composed of six equilateral triangles. [Wolfram MathWorld](https://mathworld.wolfram.com/Hexiamond.html) gives them the names
+Hexiamonds are [polyiamonds](https://mathworld.wolfram.com/Polyiamond.html) composed of six equilateral triangles. [Wolfram MathWorld](https://mathworld.wolfram.com/Hexiamond.html) gives them the names
 
 <img width="700" src="pictures/individual-hexiamonds/hexi-names.png">
 
