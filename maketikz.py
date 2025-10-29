@@ -26,22 +26,23 @@ def getTeXpreamble(fileName: str) -> str:
 
 def orientationsPicture(hname: str, hexiamond: set[tuple[int]]):
     oris = hexiamonds.orientations(hname, hexiamond)
-    picture = ''
+    picture = '\\[\n'
     for i, ori in enumerate(oris):
-        picture += '\n\\begin{tikzpicture}'
-        for tri in ori[1]:
-            picture += '\\filldraw[color={}] {};\n'.format(hname, getPath(tri))
-        picture += '\\draw[line width = 4pt] {};\n'.format(getPath(ori[0]))        
-        picture += '\n\\end{tikzpicture} \ \ \ '
+        picture += '\\begin{tikzpicture}\n'
+        path = getPath(ori[0])
+        picture += '\\filldraw[color = {}] {};\n'.format(hname, path)
+        picture += '\\draw[line width = 4pt] {};\n'.format(path)        
+        picture += '\\end{tikzpicture} \ \ \ \n'
         if (i+1) % 3 == 0:
-            picture += '\n\\vspace{3ex}\n'
+            picture += '\\]\n\n\\['
+    picture += '\\]'
     return picture
 
 def drawOrientations(no_extension_fname: str):
     body = ''
     for hname, hexiamond in hexiamonds.HEXIAMONDS.items():
         body += orientationsPicture(hname, hexiamond)
-        body += '\\pagebreak\n'
+        body += '\\pagebreak\n\n'
     makePDF(body, no_extension_fname)
         
 
