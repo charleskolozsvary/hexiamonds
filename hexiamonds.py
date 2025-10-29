@@ -41,10 +41,13 @@ def averageCar(eisens):
 
 # return triangles that make up a hexiamond
 def getTriangles(in_eisen_path: list[tuple[int]], hname: str):
+
+    is_convex = not (hname == 'hook' or hname == 'yacht' or hname == 'lobster')
+    
     eisen_path = in_eisen_path.copy()
     triangles = set()
 
-    if hname == 'hexagon': #this is sloppy, but ... it works
+    if hname == 'hexagon': #this is kind of gross
         eisen_path += [(1,1)]
 
     trips = triwise(eisen_path)
@@ -65,7 +68,7 @@ def getTriangles(in_eisen_path: list[tuple[int]], hname: str):
         for e in tri:
             if e not in eisen_path:
                 return False
-        if hname == 'hexagon': #yeah, also sloppy but works
+        if is_convex: #yeah, also sloppy but works
             return True
         if tri in triplets: # detect empty concave trianlge
             threePath = triplets[tri]

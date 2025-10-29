@@ -1,6 +1,7 @@
 import os
 import math
 import hexiamonds
+import exact_cover 
 
 def eisToCar(eisInt):
     a, b = eisInt
@@ -10,14 +11,17 @@ def eisToCar(eisInt):
     y = bwIm
     return x, y
 
-def getPath(eisen_path: list[tuple[int]]):
+def getPath(eisen_path: list[tuple[int]], make_cycle = True):
     length = len(eisen_path)
     path = ''
     for i, eis in enumerate(eisen_path):
         x, y = eisToCar(eis)
         path += '({},{})--'.format(x, y)
         if i == length-1:
-            path += 'cycle'
+            if make_cycle:
+                path += 'cycle'
+            else:
+                path = path[0:-2]
     return path
 
 def getTeXpreamble(fileName: str) -> str:
@@ -38,13 +42,50 @@ def orientationsPicture(hname: str, hexiamond: set[tuple[int]]):
     picture += '\\]'
     return picture
 
-def drawOrientations(no_extension_fname: str):
+def pdfOrientations(no_extension_fname: str):
     body = ''
     for hname, hexiamond in hexiamonds.HEXIAMONDS.items():
         body += orientationsPicture(hname, hexiamond)
         body += '\\pagebreak\n\n'
     makePDF(body, no_extension_fname)
-        
+
+def pdfGrid(no_extension_fname: str, eisen_path, points, triangles, point_size = 0.125):
+    body = '\\[\n\\begin{tikzpicture}\n'
+    body += '\\draw[line width = 3pt] {};\n'.format(getPath(eisen_path[0:-1]))
+    # for p in points:
+    #     x, y = eisToCar(p)
+    #     body += '\\filldraw ({},{}) circle ({});\n'.format(x, y, point_size)
+    for tri in triangles:
+        body += '\\draw {};\n'.format(getPath(tri))
+    body += '\\end{tikzpicture}\n\\]\n'
+    makePDF(body, no_extension_fname)
+
+def tikzGrid(eisen_path, points, triangles):
+    commands = '\\draw[line width = 3pt] {};\n'.format(getPath(eisen_path[0:-1]))
+    for tri in triangles:
+        commands += '\\draw {};\n'.format(getPath(tri))
+    return commands
+
+def pdfPlacements(no_extension_fname: str):
+    grid = exact_cover.makeHexagonishGrid()
+    grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
+
+    tikz_grid = tikzGrid(grid_path, interior_points, grid_triangles)
+    
+    hexi_p = exact_cover.getPlacements(grid, hexiamonds.HEXIAMONDS)
+    body = ''
+    for hname, placements in hexi_p.items():
+        # if hname != 'hexagon':
+        #     continue
+        for placement in placements:
+            body += '\\[\n\\begin{tikzpicture}\n'
+            body += tikz_grid            
+            path = getPath(placement[0])
+            body += '\\filldraw[color = {}] {};\n'.format(hname, path)
+            body += '\\draw[line width = 3pt] {};\n'.format(path)            
+            body += '\\end{tikzpicture}\n\\]\n\\pagebreak\n\n'
+    makePDF(body, no_extension_fname)
+            
 
 def makePDF(body: str, no_extension_fname: str):
     os.chdir('pictures/')
@@ -62,5 +103,10 @@ def makePDF(body: str, no_extension_fname: str):
     os.chdir('..')
 
 if __name__ == '__main__':
-    drawOrientations('hex-orientations')
+    pdfOrientations('hexiamond-orientations')
+    # pdfPlacements('all-placements')
+    # grid = exact_cover.makeHexagonishGrid()
+    # grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
+    
+    # pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
     

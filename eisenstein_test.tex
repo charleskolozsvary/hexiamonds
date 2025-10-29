@@ -49,7 +49,7 @@
 % d(a+b\omega) = abs(a) + abs(b) if ab <= 0
 % d(a+b\omega) = max(abs(a), abs(b)) if ab > 0
 
-\xdef\maxSteps{5}
+\xdef\maxSteps{4}
 
 \pgfmathparse{sqrt(3)}
 \xdef\sqthree{\pgfmathresult}
@@ -76,7 +76,7 @@ A triangle can be represented as the set of three Eisenstein integers which surr
   \filldraw[orange!25] (0,0)--(1,0)--(\currX,\currY)--cycle;
     \foreach \a in {-5, ..., 5}{
     \foreach \b in {-5, ..., 5}{
-      \testInGrid{\a}{\b}{5}
+      \testInGrid{\a}{\b}{\maxSteps}
       \ifx\withinGrid\one
       \eisToCar{\a}{\b}
       \rotateNinety{\currX}{\currY}
@@ -87,7 +87,7 @@ A triangle can be represented as the set of three Eisenstein integers which surr
     
   \foreach \a in {-5, ..., 5}{
     \foreach \b in {-5, ..., 5}{
-      \testInGrid{\a}{\b}{5}
+      \testInGrid{\a}{\b}{\maxSteps}
       \ifx\withinGrid\one
       \eisToCar{\a}{\b}
       \draw (\currX,\currY) circle (.4625);
