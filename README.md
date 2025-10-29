@@ -3,7 +3,9 @@ Hexiamonds are polyiamonds composed of six equilateral triangles. Wolfram gives 
 
 | bar | crook | crown | sphinx | snake | yacht | chevron | signpost | lobster | hook | hexagon | butterfly | 
 | --- | ----- | ----- | -----  | ----- | ----- | ------- | -------- | ------- | ---- | ------- | --------- |
-| ... | ...   | ...   | ...    | ...   | ...   | ...     | ...      | ...     | ...  | ...     | ...       | 
+| <img height="150" src="pictures/individual-hexiamonds/bar.png"> | <img height="150" src="pictures/individual-hexiamonds/crook.png">   | <img height="150" src="pictures/individual-hexiamonds/crown.png">   | <img height="150" src="pictures/individual-hexiamonds/sphinx.png">    | <img height="150" src="pictures/individual-hexiamonds/snake.png">   | <img height="150" src="pictures/individual-hexiamonds/yacht.png">   | <img height="150" src="pictures/individual-hexiamonds/chevron.png">     | <img height="150" src="pictures/individual-hexiamonds/signpost.png">      | <img height="150" src="pictures/individual-hexiamonds/lobster.png">     | <img height="150" src="pictures/individual-hexiamonds/hook.png">  | <img height="150" src="pictures/individual-hexiamonds/hexagon.png">     | <img height="150" src="pictures/individual-hexiamonds/butterfly.png">       | 
+
+
 
 
 # Eisenstein integers
