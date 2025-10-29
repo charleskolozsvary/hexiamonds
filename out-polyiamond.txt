@@ -1,0 +1,48 @@
+bar rot       :  3
+bar mir       :  3
+total         :  6
+
+crook rot     :  6
+crook mir     :  6
+total         : 12
+
+crown rot     :  6
+crown mir     :  0
+total         :  6
+
+sphinx rot    :  6
+sphinx mir    :  6
+total         : 12
+
+snake rot     :  3
+snake mir     :  3
+total         :  6
+
+yacht rot     :  6
+yacht mir     :  6
+total         : 12
+
+chevron rot   :  6
+chevron mir   :  0
+total         :  6
+
+signpost rot  :  6
+signpost mir  :  6
+total         : 12
+
+lobster rot   :  6
+lobster mir   :  0
+total         :  6
+
+hook rot      :  6
+hook mir      :  6
+total         : 12
+
+hexagon rot   :  1
+hexagon mir   :  0
+total         :  1
+
+butterfly rot :  3
+butterfly mir :  0
+total         :  3
+

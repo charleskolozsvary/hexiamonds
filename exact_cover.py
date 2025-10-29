@@ -68,9 +68,21 @@ def getPlacements(grid, hexiamonds):
     
     for hname, hexiamond in hexiamonds.items():
         orients = orientations(hname, hexiamond)
-        for ori in orients:
-            ori_placements = oriPlacementsInGrid(ori[0], ori[1], hname)
-            hexi_placements[hname] += ori_placements
+        oris_rot, oris_ref = orients['rotations'], orients['mirrors']
+
+        def addOrientations(iterable, add_key):
+            for ori in iterable:
+                ori_placements = oriPlacementsInGrid(ori[0], ori[1], hname)
+                key = hname+add_key
+                if key not in hexi_placements:
+                    hexi_placements[key] = []
+                hexi_placements[hname+add_key] += ori_placements
+
+        if len(oris_ref) > 0:
+            addOrientations(oris_ref, '-mirrored')
+            
+        addOrientations(oris_rot, '')
+            
     return hexi_placements
             
 
@@ -80,7 +92,6 @@ if __name__ == '__main__':
     sum_p = 0
     for hname, placements in hexi_p.items():
         sum_p += len(placements)
-        print('{:10s}: {:10}'.format(hname, len(placements)))
-    print(sum_p)
-
-    #TODO: separate non-symmetrical hexiamond placements into up-to-rotation equivalent halves (different up to reflection)
+        print('{:20s}: {:10}'.format(hname, len(placements)))
+    print()
+    print('{:20s}  {:10}'.format('total', sum_p))

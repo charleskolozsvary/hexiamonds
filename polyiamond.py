@@ -114,31 +114,32 @@ def orientations(hname: str, hexiamond: list[tuple[int]]):
     unique_ref = []
     
     prev = hexiamond
+
+    def addIfUnique(u_paths, eisen_path, path_tris):
+        if path_tris not in unique_triangle_sets:
+            frz_tris = frozenset(path_tris)
+            unique_triangle_sets.add(frz_tris)
+            u_paths.append((eisen_path, path_tris))
     
     for _ in range(6):
         rotated = normalize(rotate60(prev))
-        reflected = normalize(reflect(rotated))
-
         tri_rot = getTriangles(rotated, hname)
-        tri_ref = getTriangles(reflected, hname)
-        
-        def addIfUnique(u_paths, eisen_path, path_tris):
-            if path_tris not in unique_triangle_sets:
-                frz_tris = frozenset(path_tris)
-                unique_triangle_sets.add(frz_tris)
-                u_paths.append((eisen_path, path_tris))
-
         addIfUnique(unique_rot, rotated, tri_rot)
-        addIfUnique(unique_ref, reflected, tri_ref)
-            
         prev = rotated
+
+    for rot_path,rot_tri in unique_rot:
+        reflected = normalize(reflect(rot_path))
+        tri_ref = getTriangles(reflected, hname)
+        addIfUnique(unique_ref, reflected, tri_ref)
         
-    return unique_rot + unique_ref
+    return {'rotations':unique_rot, 'mirrors':unique_ref}
 
 if __name__ == '__main__':
     for hname, hexiamond in HEXIAMONDS.items():
-        noris = len(orientations(hname, hexiamond))
-        print('{:10}: {:2}'.format(hname, noris))
-        # if hname == 'hexagon':
-        #     print(orientations(hname, hexiamond))
+        oris = orientations(hname, hexiamond)
+        rot, mir = oris['rotations'], oris['mirrors']
+        print('{:14}: {:2}'.format(hname+' rot', len(rot)))
+        print('{:14}: {:2}'.format(hname+' mir', len(mir)))
+        print('{:14}: {:2}'.format('total', len(rot) + len(mir)))
+        print()
         

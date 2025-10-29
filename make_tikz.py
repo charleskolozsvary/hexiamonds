@@ -30,16 +30,25 @@ def getTeXpreamble(fileName: str) -> str:
 
 def orientationsPicture(hname: str, hexiamond: set[tuple[int]]):
     oris = polyiamond.orientations(hname, hexiamond)
-    picture = '\\[\n'
-    for i, ori in enumerate(oris):
-        picture += '\\begin{tikzpicture}\n'
-        path = getPath(ori[0])
-        picture += '\\filldraw[color = {}] {};\n'.format(hname, path)
-        picture += '\\draw[line width = 4pt] {};\n'.format(path)        
-        picture += '\\end{tikzpicture} \ \ \ \n'
-        if (i+1) % 3 == 0:
-            picture += '\\]\n\n\\['
-    picture += '\\]'
+    picture = '\\Large\\noindent\\texttt{Rotations:}\n'
+    
+    def drawOris(oris, picture):
+        picture += '\\[\n'
+        for i, ori in enumerate(oris):
+            picture += '\\begin{tikzpicture}\n'
+            path = getPath(ori[0])
+            picture += '\\filldraw[color = {}] {};\n'.format(hname, path)
+            picture += '\\draw[line width = 4pt] {};\n'.format(path)        
+            picture += '\\end{tikzpicture} \ \ \ \n'
+            if (i+1) % 3 == 0:
+                picture += '\\]\n\n\\['
+        picture += '\\]'
+        return picture
+                
+    picture = drawOris(oris['rotations'], picture)
+    picture += '\n \\texttt{Mirrors:}\n'
+    picture = drawOris(oris['mirrors'], picture)
+                
     return picture
 
 def pdfOrientations(no_extension_fname: str):
@@ -85,6 +94,26 @@ def pdfPlacements(no_extension_fname: str):
             body += '\\draw[line width = 3pt] {};\n'.format(path)            
             body += '\\end{tikzpicture}\n\\]\n\\pagebreak\n\n'
     makePDF(body, no_extension_fname)
+
+def pdfHexiamonds(no_extension_fname: str):
+    body = '\\begin{figure}\n\\captionsetup[subfigure]{labelformat=empty}\n'
+    i = 1
+    for hname, hex_path in polyiamond.HEXIAMONDS.items():
+            
+        body += '\\begin{subfigure}[b]{4.75pc}\\centering%\\resizebox{!}{7pc}\n{\\begin{tikzpicture}[scale=.525]\n'
+        path = getPath(hex_path)
+        body += '\\filldraw[color = {}] {};\n'.format(hname, path)
+        body += '\\draw[line width = 1.5pt] {};\n'.format(path)
+        x,y = polyiamond.averageCar(hex_path)
+        # body += '\\draw node[below] at ({},{}) {{{}}};\n'.format(x, y, '\\LARGE\\texttt{{{}}}'.format(hname))
+        body += '\\end{tikzpicture}}\n'
+        body += '\\caption{{{}}}\n'.format('\large\\texttt{{{}}}'.format(hname))
+        body += '\\end{subfigure}'
+        if i % 6 == 0:
+            body += '\n\n\\vspace{1ex}\n\n'
+        i += 1
+    body += '\\end{figure}\n'
+    makePDF(body, no_extension_fname)
             
 
 def makePDF(body: str, no_extension_fname: str):
@@ -103,6 +132,7 @@ def makePDF(body: str, no_extension_fname: str):
     os.chdir('..')
 
 if __name__ == '__main__':
+    # pdfHexiamonds('hexiamonds')
     pdfOrientations('hexiamond-orientations')
     # pdfPlacements('all-placements')
     # grid = exact_cover.makeHexagonishGrid()
