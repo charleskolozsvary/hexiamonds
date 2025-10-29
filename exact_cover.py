@@ -1,4 +1,4 @@
-from hexiamonds import sumTuples, getTriangles, orientations, HEXIAMONDS
+from polyiamond import sumTuples, getTriangles, orientations, HEXIAMONDS
 
 # return the manhattan distance from the eisenInt to the origin
 def manhattanDist(a, b):

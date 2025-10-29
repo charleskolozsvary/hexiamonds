@@ -1,6 +1,6 @@
 import os
 import math
-import hexiamonds
+import polyiamond
 import exact_cover 
 
 def eisToCar(eisInt):
@@ -29,7 +29,7 @@ def getTeXpreamble(fileName: str) -> str:
         return ''.join(readFH.readlines())
 
 def orientationsPicture(hname: str, hexiamond: set[tuple[int]]):
-    oris = hexiamonds.orientations(hname, hexiamond)
+    oris = polyiamond.orientations(hname, hexiamond)
     picture = '\\[\n'
     for i, ori in enumerate(oris):
         picture += '\\begin{tikzpicture}\n'
@@ -44,7 +44,7 @@ def orientationsPicture(hname: str, hexiamond: set[tuple[int]]):
 
 def pdfOrientations(no_extension_fname: str):
     body = ''
-    for hname, hexiamond in hexiamonds.HEXIAMONDS.items():
+    for hname, hexiamond in polyiamond.HEXIAMONDS.items():
         body += orientationsPicture(hname, hexiamond)
         body += '\\pagebreak\n\n'
     makePDF(body, no_extension_fname)
@@ -72,7 +72,7 @@ def pdfPlacements(no_extension_fname: str):
 
     tikz_grid = tikzGrid(grid_path, interior_points, grid_triangles)
     
-    hexi_p = exact_cover.getPlacements(grid, hexiamonds.HEXIAMONDS)
+    hexi_p = exact_cover.getPlacements(grid, polyiamond.HEXIAMONDS)
     body = ''
     for hname, placements in hexi_p.items():
         # if hname != 'hexagon':
