@@ -95,7 +95,7 @@ def pdfPlacements(no_extension_fname: str):
             body += '\\end{tikzpicture}\n\\]\n\\pagebreak\n\n'
     makePDF(body, no_extension_fname)
 
-def pdfHexiamonds(no_extension_fname: str):
+def pdfHexiamondNames(no_extension_fname: str):
     body = '\\begin{figure}\n\\captionsetup[subfigure]{labelformat=empty}\n'
     i = 1
     for hname, hex_path in polyiamond.HEXIAMONDS.items():
@@ -105,7 +105,6 @@ def pdfHexiamonds(no_extension_fname: str):
         body += '\\filldraw[color = {}] {};\n'.format(hname, path)
         body += '\\draw[line width = 1.5pt] {};\n'.format(path)
         x,y = polyiamond.averageCar(hex_path)
-        # body += '\\draw node[below] at ({},{}) {{{}}};\n'.format(x, y, '\\LARGE\\texttt{{{}}}'.format(hname))
         body += '\\end{tikzpicture}}\n'
         body += '\\caption{{{}}}\n'.format('\large\\texttt{{{}}}'.format(hname))
         body += '\\end{subfigure}'
@@ -132,11 +131,11 @@ def makePDF(body: str, no_extension_fname: str):
     os.chdir('..')
 
 if __name__ == '__main__':
-    # pdfHexiamonds('hexiamonds')
+    pdfHexiamondNames('name-hexiamonds')
     pdfOrientations('hexiamond-orientations')
     # pdfPlacements('all-placements')
-    # grid = exact_cover.makeHexagonishGrid()
-    # grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
     
-    # pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
+    grid = exact_cover.makeHexagonishGrid()
+    grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
+    pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
     

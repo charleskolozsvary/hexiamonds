@@ -29,18 +29,6 @@ def makeHexagonishGrid():
         
     return {'perim': grid_perimeter, 'points': grid_points, 'triangles': getTriangles(grid_points, '')}
 
-# s is a set of triangles. A triangle is a frozen set of three tuples
-# t is a list of sets of triangles
-def sInT(s, t):
-    for set_of_triangles in t:
-        if s == set_of_triangles:
-            # print(s)
-            # print()
-            # print(set_of_triangles)
-            # print()
-            return True
-    return False
-
 def getPlacements(grid, hexiamonds):
     hexi_placements = {hname : [] for hname in hexiamonds}
 
@@ -62,7 +50,6 @@ def getPlacements(grid, hexiamonds):
                 shifted_triangles = shiftTriangles(ori_triangles, point)
                 placements.append((shifted_path, shifted_triangles))
                 count += 1
-        # print(hname, count, len(placements))
         assert count == len(placements)
         return placements
     
@@ -85,7 +72,6 @@ def getPlacements(grid, hexiamonds):
             
     return hexi_placements
             
-
 if __name__ == '__main__':
     grid = makeHexagonishGrid()
     hexi_p = getPlacements(grid, HEXIAMONDS)
