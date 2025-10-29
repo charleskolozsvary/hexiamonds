@@ -7,6 +7,7 @@ __pycache__/
 *.aux
 *.out
 *.log
+*.pdf
 
 # Emacs
 *~
