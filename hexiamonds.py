@@ -1,3 +1,5 @@
+import math
+import itertools
 # coordinate (a, b) corresponds to Eisenstein integer a + b\omega
 
 # hexiamond names from https://mathworld.wolfram.com/Hexiamond.html
@@ -17,10 +19,38 @@ HEXIAMONDS = {'bar'      : [(0,0), (1,0), (2,0), (3,0), (4,1), (3,1), (2,1), (1,
 def sumTuples(t1: tuple[int], t2: tuple[int]):
     return tuple(sum(z) for z in zip(t1, t2))
 
-# return all triangles which can be formed from the passed set of Eisensten integers
-def getTriangles(eisens: set[tuple[int]]):
-    
+def triwise(p: list[int]):
+    return list(map(lambda x: [x[0][0], x[0][1], x[1][1]], itertools.pairwise(itertools.pairwise(p))))
+
+def eisToCar(eisInt):
+    a, b = eisInt
+    bwRe = -b/2
+    bwIm = b*math.sqrt(3)/2
+    x = a + bwRe
+    y = bwIm
+    return (x, y)
+
+def distance(p1, p2):
+    return math.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
+
+def averageCar(eisens):
+    cartesians = list(map(lambda x: eisToCar(x), eisens))
+    avgx = sum(map(lambda x: x[0], cartesians)) / len(eisens)
+    avgy = sum(map(lambda x: x[1], cartesians)) / len(eisens)
+    return (avgx, avgy)
+
+# return triangles that make up a hexiamond
+def getTriangles(in_eisen_path: list[tuple[int]], hname: str):
+    eisen_path = in_eisen_path.copy()
     triangles = set()
+
+    if hname == 'hexagon': #this is sloppy, but ... it works
+        eisen_path += [(1,1)]
+
+    trips = triwise(eisen_path)
+    triplets = {frozenset(three): three for three in trips}
+
+    center = averageCar(eisen_path)
     
     def trisAround(eisen: tuple[int]):
         tris = set()
@@ -33,14 +63,22 @@ def getTriangles(eisens: set[tuple[int]]):
 
     def inEisens(tri: set[tuple[int]]):
         for e in tri:
-            if e not in eisens:
+            if e not in eisen_path:
+                return False
+        if hname == 'hexagon': #yeah, also sloppy but works
+            return True
+        if tri in triplets: # detect empty concave trianlge
+            threePath = triplets[tri]
+            distance_from_center_first = distance(eisToCar(threePath[0]), center)
+            distance_from_center_second = distance(eisToCar(threePath[1]), center)
+            if distance_from_center_first > distance_from_center_second:
                 return False
         return True
             
-    for point in eisens:
+    for point in eisen_path:
         tsAround = trisAround(point)
         for t in tsAround:
-            if inEisens(s):
+            if inEisens(t):
                 triangles.add(t)
                 
     return triangles
@@ -48,18 +86,56 @@ def getTriangles(eisens: set[tuple[int]]):
 # \sigma: rotate passed Eisenstein integers by 60 degrees counter-clockwise
 # (multiply by 1+\omega)
 # \sigma(a + b\omega) = (a + b\omega)(1+\omega) = (a-b) + a\omega
-def rotate60(eisenInts: set[tuple[int]]):
-    return set(map(lambda a, b: (a-b, a), eisenInts))
+def rotate60(eisen_path: list[tuple[int]]):
+    return list(map(lambda x: (x[0]-x[1], x[0]), eisen_path))
 
 # \tau: reflect passed Eisenstein integers across the line z(1+\omega), 
 # where z \in \mathbb{Z}
 # \tau(a + b\omega) = b + a\omega
-def reflect(eisenInts: set[tuple[int]]):
-    return set(map(lambda a, b: (b, a), eisenInts))
+def reflect(eisen_path: list[tuple[int]]):
+    return list(map(lambda x: (x[1], x[0]), eisen_path))
 
-# TODO
-def normalize(eisenInts: set[tuple[int]]):
-    return 0
+# subtract the minimum real value from each Eisenstein integer and
+# subtract the minimum complex value from each Eisenstein integer
+def normalize(eisen_path: list[tuple[int]]):
+    mina = min(map(lambda x: x[0], eisen_path))
+    minb = min(map(lambda x: x[1], eisen_path))
+    return list(map(lambda x: (x[0]-mina, x[1]-minb), eisen_path))
+
+# return unique orientations as a list of tuples of the form (closed_Eisenstein_integer_path, sets_of_triangles)
+def orientations(hname: str, hexiamond: list[tuple[int]]):
+
+    unique_triangle_sets = set()
+
+    unique_rot = []
+    unique_ref = []
+    
+    prev = hexiamond
+    
+    for _ in range(6):
+        rotated = normalize(rotate60(prev))
+        reflected = normalize(reflect(rotated))
+
+        tri_rot = getTriangles(rotated, hname)
+        tri_ref = getTriangles(reflected, hname)
+        
+        def addIfUnique(u_paths, eisen_path, path_tris):
+            if path_tris not in unique_triangle_sets:
+                frz_tris = frozenset(path_tris)
+                unique_triangle_sets.add(frz_tris)
+                u_paths.append((eisen_path, path_tris))
+
+        addIfUnique(unique_rot, rotated, tri_rot)
+        addIfUnique(unique_ref, reflected, tri_ref)
+            
+        prev = rotated
+        
+    return unique_rot + unique_ref
 
 if __name__ == '__main__':
-    0
+    for hname, hexiamond in HEXIAMONDS.items():
+        noris = len(orientations(hname, hexiamond))
+        print('{:10}: {:2}'.format(hname, noris))
+        # if hname == 'hexagon':
+        #     print(orientations(hname, hexiamond))
+        
