@@ -1,5 +1,3 @@
-'''template from Hooks11 this will be what generates the exact covers in better alignment with the file's name'''
-
 import polyiamond
 import pickle
 
@@ -46,7 +44,7 @@ def getCovers(rows, primaryKeys, maxSolutions = 100):
             return
 
         if len(solutions) >= maxSolutions:
-            raise Exception ('Done finding solutions')
+            raise Exception ('Stopped finding solutions')
         
         coverKey = chooseKey(curr_kcounts)
         
@@ -56,7 +54,7 @@ def getCovers(rows, primaryKeys, maxSolutions = 100):
                 candidateRows.append(cridx)
 
         if len(candidateRows) == 0:
-            return #return unsuccessfully
+            return # return unsuccessfully
         
         for chosenRowIdx in candidateRows:
             chRow = curr_rows[chosenRowIdx]
@@ -131,11 +129,11 @@ def getPathsForPlacementsInCovers(covers, poly_placements):
         triangles = frozenset(triangles)
         placements = poly_placements[polyname]
         placement_tris = list(map(lambda x: x[1], placements))
-        assert triangles in placement_tris, "hmmm"
+        assert triangles in placement_tris
         for path, tris in placements:
             if tris == triangles:
                 return path
-        assert False, "shouldn't happen"
+        assert False, "Should never get here"
         
     for cover in covers:
         new_cover = {polyname : [] for polyname in cover}
