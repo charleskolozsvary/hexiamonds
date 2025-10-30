@@ -1,4 +1,4 @@
-'''template from Hooks11'''
+'''template from Hooks11 this will be what generates the exact covers in better alignment with the file's name'''
 
 def makeProblemMatrix(grid, polys):
     gridW = len(grid[0])
