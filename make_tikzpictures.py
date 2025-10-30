@@ -1,7 +1,6 @@
 import os
 import math
 import polyiamond
-import exact_cover 
 
 def eisToCar(eisInt):
     a, b = eisInt
@@ -76,12 +75,12 @@ def tikzGrid(eisen_path, points, triangles):
     return commands
 
 def pdfPlacements(no_extension_fname: str):
-    grid = exact_cover.makeHexagonishGrid()
+    grid = polyiamond.makeHexagonishGrid()
     grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
 
     tikz_grid = tikzGrid(grid_path, interior_points, grid_triangles)
     
-    hexi_p = exact_cover.getPlacements(grid, polyiamond.HEXIAMONDS)
+    hexi_p = polyiamond.getPlacements(grid, polyiamond.HEXIAMONDS)
     body = ''
     for hname, placements in hexi_p.items():
         # if hname != 'hexagon':
@@ -135,7 +134,7 @@ if __name__ == '__main__':
     pdfOrientations('hexiamond-orientations')
     # pdfPlacements('all-placements')
     
-    grid = exact_cover.makeHexagonishGrid()
+    grid = polyiamond.makeHexagonishGrid()
     grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
     pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
     

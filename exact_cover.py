@@ -1,83 +1,171 @@
-from polyiamond import sumTuples, getTriangles, orientations, HEXIAMONDS
+'''template from Hooks11'''
 
-# return the manhattan distance from the eisenInt to the origin
-def manhattanDist(a, b):
-    return abs(a) + abs(b) if a*b <= 0 else max(abs(a), abs(b))
+def makeProblemMatrix(grid, polys):
+    gridW = len(grid[0])
+    clues = CLUES[gridW]['polys'] if gridW in CLUES else None
+    rows = {}
+    idx = 0
+    keys = set()
+    
+    for polyominoname, basePolyomino in polys.items():
+        keys.add(polyominoname)
+        oris = orientations(basePolyomino)
+        placements = getPlacements(polyominoname, oris, grid, clues)
+        for placement in placements:
+            row = {polyominoname: 1}
+            for square in placement:
+                keys.add(square)
+                row[square] = 1
+            rows[idx] = row
+            idx += 1
+    return rows, keys
 
-def makeHexagonishGrid():
-    start = (-3,-5)
-    transitions = [(1,0),(1,1),(1,0),(1,1),(1,0),(1,1),
-                   (0,1),(1,1),(0,1),(1,1),(0,1),
-                   (-1,0),(0,1),(-1,0),(0,1),(-1,0),
-                   (-1,-1),(-1,0),(-1,-1),(-1,0),(-1,-1),
-                   (0,-1),(-1,-1),(0,-1),(-1,-1),(0,-1),
-                   (1,0),(0,-1),(1,0),(0,-1)]
-    grid_perimeter = [start]
-    for t in transitions:
-        grid_perimeter.append(sumTuples(grid_perimeter[-1], t))
+def withinGrid(gridW, pos):
+    x, y = pos
+    return x >= 0 and x < gridW and y >= 0 and y < gridW
 
-    min_dist = min(map(lambda x: manhattanDist(x[0], x[1]), grid_perimeter))
+def getCovers(gridW, rows, primaryKeys, prune2x2 = False):
+    
+    polyclues = CLUES[gridW]['polys'] if gridW in CLUES else None
+    polydirs  = CLUES[gridW]['polydirs'] if gridW in CLUES else None
+    
+    pkCounts = {}
+    for row in rows.values():
+        for key in row:
+            if key not in primaryKeys: 
+                continue 
+            if key in pkCounts:
+                pkCounts[key] += 1
+            else:
+                pkCounts[key] = 1
+    
+    def chooseKey(counts): #choose key with minimum rows
+        return {v:k for k,v in counts.items()}[min(counts.values())]
+    
+    solutions = [] #list of lists of row indices
 
-    grid_points = set(grid_perimeter)
+    def existsFilled2x2(crow, curr_filled_squares):
+        filledSquares = curr_filled_squares.copy()
+        for key in crow:
+            if type(key) is not tuple:
+                continue
+            filledSquares[key] = 1
+        for x in range(gridW-1):
+            for y in range(gridW-1):
+                by2 = [(x,y), (x+1,y), (x,y+1), (x+1,y+1)]
+                if all(map(lambda sq: sq in filledSquares, by2)):
+                    return True
+        return False
 
-    for b in range(-5, 5):
-        for a in range(-5, 5):
-            if manhattanDist(a, b) <= min_dist:
-                grid_points.add((a,b))
-                
-    grid_points = sorted(grid_points)
+    def violatesPolyClue(crow, curr_filled_squares):
+        filledSquares = curr_filled_squares.copy()
+        newpoly = None
+        newsquares = []
+        for key in crow:
+            if type(key) is not tuple:
+                newpoly = key
+            elif type(key) is tuple:
+                newsquares.append(key)
+        assert newpoly is not None 
+        curr_polys = set(curr_filled_squares.values())
+        curr_polys.add(newpoly)
         
-    return {'perim': grid_perimeter, 'points': grid_points, 'triangles': getTriangles(grid_points, '')}
+        for sq in newsquares:
+            filledSquares[sq] = newpoly
 
-def getPlacements(grid, hexiamonds):
-    hexi_placements = {hname : [] for hname in hexiamonds}
+        for pname, start_pos in polyclues.items():
+            if pname not in curr_polys:
+                continue
+            move = polydirs[start_pos]
+            curr_pos = start_pos            
+            while withinGrid(gridW, curr_pos):
+                if curr_pos in filledSquares:
+                    if filledSquares[curr_pos] == pname:
+                        break
+                    else:
+                        return True
+                        
+                curr_pos = utils.sumTuples(curr_pos, move)
+        return False
+            
+    def search(curr_sol, curr_rows, curr_kcounts, curr_filled_squares):
+        if len(curr_kcounts) == 0:
+            solutions.append(curr_sol)
+            return
+        
+        coverKey = chooseKey(curr_kcounts)
+        
+        candidateRows = [] 
+        for cridx, crow in curr_rows.items():
+            if coverKey in crow:
+                candidateRows.append(cridx)
 
-    def shiftTriangles(tris, point):
-        triangles = set()
-        for tri in tris:
-            shifted_tri = set()
-            for t in tri:
-                shifted_tri.add(sumTuples(t, point))
-            triangles.add(frozenset(shifted_tri))
-        return triangles
+        if len(candidateRows) == 0:
+            return
+        
+        for chosenRowIdx in candidateRows:
+            chRow = curr_rows[chosenRowIdx] 
+            if prune2x2 and (existsFilled2x2(chRow, curr_filled_squares) or violatesPolyClue(chRow, curr_filled_squares)):
+                continue
+            
+            next_sol = curr_sol.copy()
+            next_rows = curr_rows.copy()
+            next_kcounts = curr_kcounts.copy()
+            next_filled_squares = curr_filled_squares.copy()
+            
+            next_sol.append(chosenRowIdx)            
+            for cridx, crow in curr_rows.items():
+                willDelete = False
+                for key in crow:
+                    if key in chRow:
+                        willDelete = True
+                        break
+                if willDelete:
+                    for key in crow:
+                        if key in primaryKeys:
+                            next_kcounts[key] -= 1
+                    del next_rows[cridx]
+
+            chpoly = None
+            for key in chRow:
+                if type(key) is str:
+                    chpoly = key
+                    break
+            assert chpoly is not None, "somehow chpoly is still None"
+
+            ## remove keys that belong to chosen row
+            for key in chRow:
+                if type(key) is tuple:
+                    next_filled_squares[key] = chpoly
+                if key not in primaryKeys:
+                    continue
+                assert next_kcounts[key] == 0
+                del next_kcounts[key]
+                    
+            search(next_sol, next_rows, next_kcounts, next_filled_squares)
     
-    def oriPlacementsInGrid(ori_path, ori_triangles, hname):
-        count = 0
-        placements = []
-        for point in grid['points']:
-            shifted_path = list(map(lambda x: sumTuples(x, point), ori_path))
-            if all(map(lambda x: x in grid['points'], shifted_path)): #if the perimeter is in the grid, so are the triangles
-                shifted_triangles = shiftTriangles(ori_triangles, point)
-                placements.append((shifted_path, shifted_triangles))
-                count += 1
-        assert count == len(placements)
-        return placements
-    
-    for hname, hexiamond in hexiamonds.items():
-        orients = orientations(hname, hexiamond)
-        oris_rot, oris_ref = orients['rotations'], orients['mirrors']
+    search([], rows, pkCounts, {})
 
-        def addOrientations(iterable, add_key):
-            for ori in iterable:
-                ori_placements = oriPlacementsInGrid(ori[0], ori[1], hname)
-                key = hname+add_key
-                if key not in hexi_placements:
-                    hexi_placements[key] = []
-                hexi_placements[hname+add_key] += ori_placements
+    return translateCovers(solutions, rows)
 
-        if len(oris_ref) > 0:
-            addOrientations(oris_ref, '-mirrored')
-            
-        addOrientations(oris_rot, '')
-            
-    return hexi_placements
-            
-if __name__ == '__main__':
-    grid = makeHexagonishGrid()
-    hexi_p = getPlacements(grid, HEXIAMONDS)
-    sum_p = 0
-    for hname, placements in hexi_p.items():
-        sum_p += len(placements)
-        print('{:20s}: {:10}'.format(hname, len(placements)))
-    print()
-    print('{:20s}  {:10}'.format('total', sum_p))
+# The incoming covers are lists of row indices from the problem matrix.
+# The outgoing covers are lists of dictionaries with polyomino names
+# as keys and occupied squares as values
+def translateCovers(covers_in, matrix):
+    covers_out = []
+    for cover_in in covers_in:
+        cover_out = {}
+        rows = [matrix[ridx] for ridx in cover_in]
+        for row in rows:
+            polyname = None
+            squares = []
+            for key in row:
+                if type(key) is tuple:
+                    squares.append(key)
+                else:
+                    assert polyname is None, "..."
+                    polyname = key
+            cover_out[polyname] = squares
+        covers_out.append(cover_out)
+    return covers_out
+

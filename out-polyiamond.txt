@@ -1,3 +1,4 @@
+Orientations:
 bar rot       :  3
 bar mir       :  3
 total         :  6
@@ -46,3 +47,25 @@ butterfly rot :  3
 butterfly mir :  0
 total         :  3
 
+Placements:
+bar                 :        102
+crook               :        214
+crown               :        224
+sphinx              :        214
+snake               :        112
+yacht               :        228
+chevron             :        208
+signpost            :        224
+lobster             :        228
+hook                :        228
+hexagon             :         43
+butterfly           :        112
+bar-mirrored        :        102
+crook-mirrored      :        214
+sphinx-mirrored     :        214
+snake-mirrored      :        112
+yacht-mirrored      :        228
+signpost-mirrored   :        224
+hook-mirrored       :        228
+
+total                       3459
