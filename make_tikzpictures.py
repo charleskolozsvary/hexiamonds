@@ -1,6 +1,8 @@
 import os
 import math
 import polyiamond
+import re
+import pickle
 
 def eisToCar(eisInt):
     a, b = eisInt
@@ -8,13 +10,29 @@ def eisToCar(eisInt):
     bwIm = b*math.sqrt(3)/2
     x = a + bwRe
     y = bwIm
-    return x, y
+    return (x, y)
+
+# p is a cartesian point
+def rotate30(p):
+    ''' (1, 0) -> (sqrt(3)/2, 1/2)
+        (0, 1) -> (-1/2, sqrt(3)/2)
+    \\begin{pmatrix}
+    sqrt(3)/2 & -1/2 \\
+    1/2       & sqrt(3)/2
+    \\end{pmatrix}
+    '''
+    x, y = p
+    sqrt3o2 = math.sqrt(3)/2
+    rot_x = x*sqrt3o2 + y*-0.5
+    rot_y = x*0.5 + y*sqrt3o2
+    return rot_x, rot_y
+    
 
 def getPath(eisen_path: list[tuple[int]], make_cycle = True):
     length = len(eisen_path)
     path = ''
     for i, eis in enumerate(eisen_path):
-        x, y = eisToCar(eis)
+        x, y = rotate30(eisToCar(eis))
         path += '({},{})--'.format(x, y)
         if i == length-1:
             if make_cycle:
@@ -68,10 +86,13 @@ def pdfGrid(no_extension_fname: str, eisen_path, points, triangles, point_size =
     body += '\\end{tikzpicture}\n\\]\n'
     makePDF(body, no_extension_fname)
 
-def tikzGrid(eisen_path, points, triangles):
-    commands = '\\draw[line width = 3pt] {};\n'.format(getPath(eisen_path[0:-1]))
+def tikzGrid(eisen_path, points, triangles, no_lattice = True):
+    commands = '\\draw[line width = 3pt, color = white] {};\n'.format(getPath(eisen_path[0:-1]))
+    commands = '\\draw[line width = 1pt] {};\n'.format(getPath(eisen_path[0:-1]))
+    if no_lattice:
+        return commands
     for tri in triangles:
-        commands += '\\draw {};\n'.format(getPath(tri))
+        commands += '\\draw[densely dotted] {};\n'.format(getPath(tri))
     return commands
 
 def pdfPlacements(no_extension_fname: str):
@@ -112,7 +133,38 @@ def pdfHexiamondNames(no_extension_fname: str):
         i += 1
     body += '\\end{figure}\n'
     makePDF(body, no_extension_fname)
+
+def pdfCovers(no_extension_fname, covers):
+    
+    grid = polyiamond.makeHexagonishGrid()
+    grid_path = grid['perim']
+
+    blt = 2.75 # black line thickness
+    wlt = .9   # white line thickness
+    rness = 1  # corner roundedness
+    
+    body = ''
+    for cover in covers:
+        body += '\\[\\begin{tikzpicture}\n'
+        for polyname, placement in cover.items():
+            hname = re.search('[^-]*', polyname).group(0)
+            path = getPath(placement[0])
+            body += '\\begin{scope}\n'
+            body += '\\clip[rounded corners={r}pt] {p};\n'.format(p=path,r=rness)            
+            body += '\\filldraw[color = {n},line cap=butt,rounded corners={r}pt] {p};\n'.format(n=hname, r=rness, p=path)
+            body += '\\path[draw=black,line width={lw},line cap=butt,rounded corners = {r}pt] {p};\n'.format(lw=blt,r=rness,p=path)    
+            body += '\\end{scope}\n'
+    
+        body += '\\path[draw=black,line width={lw}pt,line cap=butt,rounded corners={r}pt] {p};\n'.format(lw=blt,r=rness,p=getPath(grid_path))
+
+        for polyname, placement in cover.items():
+            hname = re.search('[^-]*', polyname).group(0)
+            path = getPath(placement[0])
+            body += '\\path[draw=white,line cap=butt,line width={lw}pt,rounded corners={r}pt] {p};\n'.format(lw=wlt,r=rness,p=path)            
             
+        body += '\\end{tikzpicture}\\]\n\n\\pagebreak\n\n'
+    makePDF(body, no_extension_fname)
+    
 
 def makePDF(body: str, no_extension_fname: str):
     os.chdir('pictures/')
@@ -129,12 +181,18 @@ def makePDF(body: str, no_extension_fname: str):
     
     os.chdir('..')
 
-if __name__ == '__main__':
+def oldMain():
     pdfHexiamondNames('name-hexiamonds')
     pdfOrientations('hexiamond-orientations')
     # pdfPlacements('all-placements')
     
     grid = polyiamond.makeHexagonishGrid()
     grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
-    pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
+    pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)    
+    
+
+if __name__ == '__main__':
+    with open('a-few-covers.pkl', 'rb') as f:
+        covers = pickle.load(f)
+    pdfCovers('one-cover', covers[38:39])
     
