@@ -15,7 +15,7 @@ Knuth writes in [Dancing Links](https://arxiv.org/abs/cs/0011047)
 > In the late 1950s, T. H. O'Beirne introduced a pleasant
 > variation on polyominoes by substituting triangles for squares. ... O’Beirne was particularly fascinated by the fact
 > that seven of the twelve hexiamonds have diﬀerent shapes when they are flipped over, and that the resulting 19
-> *one-sided hexiamonds* \[i.e., those distinct up to reflection\] have the correct number of triangles to form a hexagon: a hexagon of hexiamonds.
+> *one-sided hexiamonds* \[i.e., those distinct up to reflection; see [pictures/orientations.pdf](pictures/orientations.pdf) for which hexiamonds are chiral\] have the correct number of triangles to form a hexagon: a hexagon of hexiamonds.
 
 Here is one such hexagon of hexiamonds.
 
