@@ -3,6 +3,9 @@ import math
 import polyiamond
 import re
 import pickle
+import pymupdf
+import sys
+import subprocess
 
 def eisToCar(eisInt):
     a, b = eisInt
@@ -55,7 +58,7 @@ def orientationsTeX(hname: str, hexiamond: set[tuple[int]]):
             path = tikzPath(ori[0], rotate=False)
             tex += '\\filldraw[color = {}] {};\n'.format(hname, path)
             tex += '\\draw[line width = 4pt] {};\n'.format(path)        
-            tex += '\\end{tikzpicture} \ \ \ \n'
+            tex += '\\end{tikzpicture} \\ \\ \\ \n'
             if (i+1) % 3 == 0:
                 tex += '\\]\n\n\\['
         tex += '\\]'
@@ -113,7 +116,12 @@ def pdfPlacements(no_extension_fname: str, hnames):
     makePDF(body, 'placements/{}'.format(no_extension_fname), doc_class = 'article')
 
 def pdfHexiamondNames(no_extension_fname: str):
-    body = '\\begin{minipage}{28.5pc}\n\\begin{figure}\n\\captionsetup[subfigure]{labelformat=empty}\n'
+    body = '\\begin{minipage}{30pc}\n'
+    
+    topsep = '2ex'
+    bottomsep = '.5ex'
+    body += '\n\\vspace{{{}}}\n\n'.format(topsep)
+    body += '\\begin{figure}\n\\centering\\captionsetup[subfigure]{labelformat=empty}\n'
     i = 1
     
     for hname, hex_path in polyiamond.HEXIAMONDS.items():    
@@ -123,13 +131,15 @@ def pdfHexiamondNames(no_extension_fname: str):
         body += '\\draw[line width = 1.5pt] {};\n'.format(path)
         x,y = polyiamond.averageCar(hex_path)
         body += '\\end{tikzpicture}}\n'
-        body += '\\caption{{{}}}\n'.format('\large\\texttt{{{}}}'.format(hname))
+        body += '\\caption{{{}}}\n'.format('\\large\\texttt{{{}}}'.format(hname))
         body += '\\end{subfigure}'
         if i == 6:
             body += '\n\n\\vspace{1ex}\n\n'
         i += 1
         
-    body += '\\end{figure}\n\\end{minipage}'
+    body += '\\end{figure}\n'
+    body += '\\vspace{{{}}}'.format(bottomsep)
+    body += '\\end{minipage}'
     makePDF(body, no_extension_fname, doc_class = 'standalone')
 
 def tikzCover(cover, grid_path, blt, wlt, rness):
@@ -161,16 +171,30 @@ def pdfCovers(no_extension_fname, covers, doc_class = 'article'):
     rness = 1  # corner roundedness
 
     is_article = doc_class == 'article'
+
+    minipage_width = '25pc'
+    topsep = '5ex'
+    bottomsep = '5ex'
     
     body = ''
+    if not is_article:
+        body += '\\begin{minipage}'
+        body += '{{{}}}\n'.format(minipage_width)
+        body += '\\begin{figure}\\centering'
+        body += '\\vspace{{{}}}\n\n'.format(topsep)
+        
     for cover in covers:
         if is_article:
-            body += '\[\n'
+            body += '\\[\n'
             
         body += tikzCover(cover, grid_path, blt, wlt, rness)
         
         if is_article:
-            body += '\]\n\n\\pagebreak\n\n'
+            body += '\\]\n\n\\pagebreak\n\n'
+            
+    if not is_article:
+        body += '\n\\vspace{{{}}}\n\n'.format(bottomsep)
+        body += '\\end{figure}\\end{minipage}\n'        
         
     makePDF(body, no_extension_fname, doc_class)
     
@@ -195,8 +219,25 @@ def makePDF(body: str, no_extension_fname: str, doc_class = 'article'):
         f.write('\\begin{document}')
         f.write(body)
         f.write('\\end{document}')
-        
-    os.system('pdflatex {}'.format(tex_file))
+
+    script_name = re.search('[^.]+', sys.argv[0]).group(0)
+
+    log_fname = '{}/log_{}.txt'.format(cwd,script_name)
+    print('Running pdflatex {}'.format(tex_file))
+    try: 
+        with open(log_fname, 'w') as f:
+            subprocess.run(['pdflatex', '-interaction=nonstopmode', tex_file], stdout=f, stderr=subprocess.STDOUT, check=True)
+    except subprocess.CalledProcessError as e:
+        print("\n! pdflatex failed")
+        with open(log_fname, 'r') as f:
+            print("".join(f.readlines()[-15:]))
+
+    if doc_class == 'standalone':
+        pdf = pymupdf.open('{}.pdf'.format(basename))
+        page = pdf[0]
+        image = page.get_pixmap(dpi=1080)
+        fname = '{}.png'.format(basename)
+        image.save(fname, 'png', jpg_quality=100)
 
     os.chdir(cwd)
 
@@ -204,23 +245,23 @@ def oldMain(do_placements = False):
     grid = polyiamond.makeHexagonishGrid()
     grid_path, interior_points, grid_triangles = grid['perim'], grid['points'], grid['triangles']
     
-    pdfHexiamondNames('name-hexiamonds')
-    pdfOrientations('hexiamond-orientations')
-    pdfGrid('hexagonish-grid', grid_path, interior_points, grid_triangles)
+    pdfHexiamondNames('names')
+    pdfOrientations('orientations')
+    pdfGrid('grid', grid_path, interior_points, grid_triangles)
 
     if do_placements:
         for hname in ['hexagon', 'butterfly', 'hook', 'yacht']:
             pdfPlacements(hname, [hname])
 
-def coverMain(do_all_covers = False):
+def coverMain(do_100_covers = False):
     with open('a-few-covers.pkl', 'rb') as f:
         covers = pickle.load(f)
     
-    if do_all_covers:
+    if do_100_covers:
         pdfCovers('100-covers', covers)
     else:
         pdfCovers('example-cover', covers[76:77], doc_class = 'standalone')
-        pdfCovers('nice-cover', covers[38:39])
+        pdfCovers('nice-cover', covers[38:39], doc_class = 'standalone')
 
 if __name__ == '__main__':
     oldMain()
