@@ -36,7 +36,9 @@ def getCovers(rows, primaryKeys, maxSolutions = 100):
         return {v:k for k,v in counts.items()}[min(counts.values())]
     
     solutions = [] #list of lists of row indices
-            
+
+    # Algorithm X 
+    # Not implemented with dancing links. This is just meant to find a few, not all exact covers
     def search(curr_sol, curr_rows, curr_kcounts, curr_filled_baseshapes):
         if len(curr_kcounts) == 0:
             print('SOLUTION FOUND')
