@@ -1,2 +1,5 @@
 *.tex
 !*.pdf
+*.dpth
+*.md5
+*.auxlock
