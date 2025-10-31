@@ -17,6 +17,6 @@ Knuth writes in [Dancing Links](https://arxiv.org/abs/cs/0011047)
 > that seven of the twelve hexiamonds have diﬀerent shapes when they are flipped over, and that the resulting 19
 > *one-sided hexiamonds* \[i.e., those distinct up to reflection\] have the correct number of triangles to form a hexagon: a hexagon of hexiamonds.
 
-Here is one such hexagon of hexiamonds which was found and drawn by the code in this repository.
+Here is one such hexagon of hexiamonds.
 
 <img width="600" src="pictures/example-cover.png">
